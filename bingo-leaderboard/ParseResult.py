@@ -51,8 +51,10 @@ class Result:
         self.time = race_info['time']
 
         self.forfeit = race_info['forfeit']
-        self.dq = race_info['dq'] == 'True'
+        self.dq = race_info['dq']
         self.finished = not self.forfeit and not self.dq
+        if not self.finished:
+            self.time = dt.timedelta(seconds=86313600) # 999 days
         self.rank = race_info['rank']
         self.points = int(race_info['points'])
         self.comment = race_info['comment']
@@ -60,3 +62,19 @@ class Result:
 
     def is_valid_bingo_result(self):
         return not self.blocklisted and not self.dq and is_regular_bingo_goal(self.goal)
+
+    def time_penalized_by_age(self):
+        now = dt.datetime.now().date()
+        age = max((now - self.date).days, 0)
+        factor = age_penalty_factor(age)
+        return self.time * factor
+
+
+
+def age_penalty_factor(days):
+    penalty_factor = 1 - 1.5/335 + (days * 0.05 / 335)
+    if penalty_factor >= 1.1:
+        return 1.1
+    if penalty_factor <= 1:
+        return 1
+    return penalty_factor
