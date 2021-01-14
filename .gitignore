@@ -1,5 +1,6 @@
 # Project folders
 bingo-leaderboard-research/
+*.pickle
 
 # Pycharm
 .idea/
